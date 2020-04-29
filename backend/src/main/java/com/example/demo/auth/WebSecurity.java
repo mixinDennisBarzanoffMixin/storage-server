@@ -1,5 +1,6 @@
 package com.example.demo.auth;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -7,10 +8,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.context.annotation.Bean;
+
+import java.util.Arrays;
 
 @EnableWebSecurity
 public class WebSecurity extends WebSecurityConfigurerAdapter {
@@ -24,7 +27,15 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable().authorizeRequests()
+        http.addFilterBefore(new CorsFilter(), ChannelProcessingFilter.class).
+        cors().and().csrf().disable().authorizeRequests()
+//                .antMatchers("/**").permitAll()
+//                .antMatchers("/css/**").permitAll()
+//                .antMatchers("/img/**").permitAll()
+//                .antMatchers("/js/**").permitAll()
+//                .antMatchers("/fonts/**").permitAll()
+//                .antMatchers("/icons/**").permitAll()
+//                .antMatchers("/packages/cupertino_icons/assets/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/signup", "/confirm-account").permitAll()
                 .antMatchers(HttpMethod.GET, "/confirm-account").permitAll()
                 .anyRequest().authenticated()
@@ -40,10 +51,24 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder);
     }
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
-        return source;
-    }
+//    @Bean
+//    CorsFilter corsFilter() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+
+//        source.registerCorsConfiguration("/**", configuration);
+//        return new CorsFilter(source);
+//    }
+
+//    @Bean
+//    CorsConfigurationSource corsConfigurationSource()
+//    {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(Arrays.asList("*"));
+//        configuration.setAllowedMethods(Arrays.asList("*"));
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//    }
+
 }

@@ -1,3 +1,4 @@
+import 'package:file_server_flutter/screens/file_tree/file_tree.dart';
 import 'package:file_server_flutter/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
@@ -30,8 +31,7 @@ class SignInFormBloc extends FormBloc<String, String> {
       emitSuccess(canSubmitAgain: true);
     } on UserAlreadyExistsException {
       emitFailure(failureResponse: 'This user already exists');
-    }
-    catch (e) {
+    } catch (e) {
       emitFailure(failureResponse: 'An error has occured');
     }
   }
@@ -75,7 +75,7 @@ class SignInScreen extends StatelessWidget {
                   LoadingDialog.hide(context);
 
                   Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => SuccessScreen()));
+                      MaterialPageRoute(builder: (_) => FileTree()));
                 },
                 onFailure: (context, state) {
                   LoadingDialog.hide(context);
@@ -96,7 +96,7 @@ class SignInScreen extends StatelessWidget {
                             prefixIcon: Icon(Icons.email),
                           ),
                         ),
-                         TextFieldBlocBuilder(
+                        TextFieldBlocBuilder(
                           textFieldBloc: formBloc.passwordField,
                           decoration: InputDecoration(
                             labelText: 'Password',
@@ -104,6 +104,12 @@ class SignInScreen extends StatelessWidget {
                           ),
                           suffixButton: SuffixButton.obscureText,
                         ),
+                        FlatButton(
+                          child: Text('Sign Up'),
+                          onPressed: () => {
+                            Navigator.pushReplacementNamed(context, '/signup')
+                          },
+                        )
                       ],
                     ),
                   ),

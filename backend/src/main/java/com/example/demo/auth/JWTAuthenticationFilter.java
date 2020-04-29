@@ -3,7 +3,9 @@ package com.example.demo.auth;
 
 import com.auth0.jwt.JWT;
 import com.example.demo.entity.User;
+import com.example.demo.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,6 +25,10 @@ import static com.example.demo.auth.SecurityConstants.*;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    public UserRepository userRepository;
+    // doesn't work
 
     public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
@@ -51,11 +57,16 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             HttpServletResponse res,
                                             FilterChain chain,
                                             Authentication auth) throws IOException, ServletException {
-
+        String email = ((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getUsername();
+        System.out.println(email);
+//        System.out.println(userRepository);
+//        User user = userRepository.findByEmail(email);
         String token = JWT.create()
-                .withSubject(((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getUsername())
+                .withSubject(email)
                 .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+//                .withClaim("displayName", user.getName())
                 .sign(HMAC512(SECRET.getBytes()));
         res.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
+        res.setHeader("Access-Control-Expose-Headers", "*");
     }
 }

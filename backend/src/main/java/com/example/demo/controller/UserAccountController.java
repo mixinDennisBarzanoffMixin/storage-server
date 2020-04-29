@@ -38,7 +38,7 @@ public class UserAccountController {
     public ResponseEntity<?> registerUser(@RequestBody User user) {
         System.out.println(user);
 
-        User existingUser = userRepository.findByEmailIgnoreCase(user.getEmail());
+        User existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser != null) {
             // return error (conflict) - most appropriate when already exists
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Already created");
@@ -69,11 +69,12 @@ public class UserAccountController {
         System.out.println(token);
 
         if (token != null) {
-            User user = userRepository.findByEmailIgnoreCase(token.getUser().getEmail());
+            User user = userRepository.findByEmail(token.getUser().getEmail());
             user.setEnabled(true);
             userRepository.save(user);
             return ResponseEntity.status(301)
                     .header(HttpHeaders.LOCATION, "http://localhost:4200/#/signin")
+                    .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Location")
                     .body("Account Confirmed");
         } else {
             return ResponseEntity.badRequest().body("No such token");

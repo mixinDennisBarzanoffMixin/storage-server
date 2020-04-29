@@ -20,7 +20,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        com.example.demo.entity.User applicationUser = applicationUserRepository.findByEmailIgnoreCase(username);
+        com.example.demo.entity.User applicationUser = applicationUserRepository.findByEmail(username);
         if (applicationUser == null) {
             throw new UsernameNotFoundException(username);
         }
