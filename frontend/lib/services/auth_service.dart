@@ -107,8 +107,7 @@ print(response);
 switch (response.statusCode) {
   case 200:
     print('success');
-    final authToken = response.headers['authorization'] ??
-        response.headers['Authorization'];
+    final authToken = response.headers['authorization'];
     print(response.headers);
     print(authToken);
     prefs.setString('authToken', authToken);

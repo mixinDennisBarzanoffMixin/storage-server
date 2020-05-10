@@ -5,9 +5,6 @@ abstract class FilesEvent {}
 
 class GoBackEvent extends FilesEvent {}
 
-
-
-
 abstract class FileNameEvent extends FilesEvent {
   final String fileName;
   FileNameEvent(this.fileName);
@@ -43,4 +40,12 @@ class CreateDirectoryEvent extends FileNameEvent {
 
 class DeleteFileEvent extends FileNameEvent {
   DeleteFileEvent({String fileName}) : super(fileName);
+}
+
+class MoveFileEvent extends FileNameEvent {
+  final String fileToMoveTo;
+  MoveFileEvent({
+    @required String fileName,
+    @required this.fileToMoveTo,
+  }) : super(fileName);
 }

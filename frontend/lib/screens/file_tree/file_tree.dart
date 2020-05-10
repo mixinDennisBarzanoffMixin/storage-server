@@ -2,7 +2,6 @@ import 'package:file_server_flutter/services/auth_service.dart';
 import 'package:file_server_flutter/shared/file.dart';
 import 'package:file_server_flutter/shared/layout_breakpoints.dart';
 import 'package:file_server_flutter/shared/user.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:loading_overlay/loading_overlay.dart';
@@ -32,157 +31,154 @@ class _FileTreeState extends State<FileTree> {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: Theme.of(context).copyWith(primaryColor: Colors.red),
-          child: ResponsiveScaffold(
-        kDesktopBreakpoint: 1200,
-        title: Text('Personal storage'),
-        drawer: Drawer(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: <Widget>[
-                    FlutterLogo(size: 44),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16.0),
-                      child: Text(
-                        'Your drive',
-                        style: Theme.of(context).textTheme.headline4,
-                      ),
+    return ResponsiveScaffold(
+      kDesktopBreakpoint: 1200,
+      title: Text('Personal storage'),
+      drawer: Drawer(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: <Widget>[
+                  FlutterLogo(size: 44),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0),
+                    child: Text(
+                      'Your drive',
+                      style: Theme.of(context).textTheme.headline4,
                     ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView(
-                  children: <Widget>[
-                    ListTile(
-                      leading: Icon(Icons.cloud),
-                      title: Text('My drive'),
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.people),
-                      title: Text('Shared with me'),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        trailing: StreamBuilder(
-          stream: _auth.loggedIn(),
-          builder: (context, isLoggedInSnapshot) {
-            if (isLoggedInSnapshot.hasData && isLoggedInSnapshot.data == true) {
-              // logged in
-              return PopupMenuButton(
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    child: LogoutButton(),
                   ),
                 ],
-                child: CircleAvatar(
-                  backgroundColor: Colors.red,
-                  radius: 20,
-                  child: Text(getFirstLetterOfName(context)),
-                ),
-              );
-            } else
-              return LoginButton();
-          },
-        ),
-        body: LoadingOverlay(
-          isLoading: _isLoading,
-          child: Scrollbar(
-            child: BlocConsumer<FilesBloc, FilesState>(
-              listener: (context, state) {
-                if (state is FilesLoading) {
-                  setState(() {
-                    _isLoading = true;
-                  });
-                  return;
-                } else if (state is FilesError) {
-                  Scaffold.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message),
-                    ),
-                  );
-                }
-                setState(() {
-                  _isLoading = false;
-                });
-              },
-              buildWhen: (prevState, currState) => currState is FilesAtDirectory,
-              builder: (context, state) {
-                final size = MediaQuery.of(context).size;
-                final childWidth = size.width / 3;
-                final childHeight = childWidth / 4;
-                return Column(
-                  children: <Widget>[
-                    if (state is FilesAtDirectory) ...[
-                      AppBar(
-                        leading: IconButton(
-                          icon: Icon(Icons.arrow_back),
-                          onPressed: () {
-                            BlocProvider.of<FilesBloc>(context)
-                                .add(GoBackEvent());
-                          },
-                        ),
-                        title: Text(
-                          state.currentDirectory,
-                          style: Theme.of(context).textTheme.headline5.copyWith(
-                                color: Colors.white,
-                              ),
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      Expanded(
-                        child: GridView.count(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: getIssuesGridGutter(context),
-                          ),
-                          crossAxisCount: getIssueGridCount(context),
-                          crossAxisSpacing: getIssuesGridGutter(context),
-                          mainAxisSpacing: getIssuesGridGutter(context),
-                          childAspectRatio: (childWidth / childHeight),
-                          children: [
-                            for (File file in state.files)
-                              FileWidget(
-                                file: file,
-                                dragSubject: _dragSubject,
-                              ),
-                          ],
-                          scrollDirection: Axis.vertical,
-                        ),
-                      ),
-                    ],
-                  ],
-                );
-              },
+              ),
             ),
+            Expanded(
+              child: ListView(
+                children: <Widget>[
+                  ListTile(
+                    leading: Icon(Icons.cloud),
+                    title: Text('My drive'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.people),
+                    title: Text('Shared with me'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      trailing: StreamBuilder(
+        stream: _auth.loggedIn(),
+        builder: (context, isLoggedInSnapshot) {
+          if (isLoggedInSnapshot.hasData && isLoggedInSnapshot.data == true) {
+            // logged in
+            return PopupMenuButton(
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  child: LogoutButton(),
+                ),
+              ],
+              child: CircleAvatar(
+                backgroundColor: Colors.red,
+                radius: 20,
+                child: Text(getFirstLetterOfName(context)),
+              ),
+            );
+          } else
+            return LoginButton();
+        },
+      ),
+      body: LoadingOverlay(
+        isLoading: _isLoading,
+        child: Scrollbar(
+          child: BlocConsumer<FilesBloc, FilesState>(
+            listener: (context, state) {
+              if (state is FilesLoading) {
+                setState(() {
+                  _isLoading = true;
+                });
+                return;
+              } else if (state is FilesError) {
+                Scaffold.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                  ),
+                );
+              }
+              setState(() {
+                _isLoading = false;
+              });
+            },
+            buildWhen: (prevState, currState) => currState is FilesAtDirectory,
+            builder: (context, state) {
+              final size = MediaQuery.of(context).size;
+              final childWidth = size.width / 3;
+              final childHeight = childWidth / 4;
+              return Column(
+                children: <Widget>[
+                  if (state is FilesAtDirectory) ...[
+                    AppBar(
+                      leading: IconButton(
+                        icon: Icon(Icons.arrow_back),
+                        onPressed: () {
+                          BlocProvider.of<FilesBloc>(context)
+                              .add(GoBackEvent());
+                        },
+                      ),
+                      title: Text(
+                        state.currentDirectory,
+                        style: Theme.of(context).textTheme.headline5.copyWith(
+                              color: Colors.white,
+                            ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Expanded(
+                      child: GridView.count(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: getIssuesGridGutter(context),
+                        ),
+                        crossAxisCount: getIssueGridCount(context),
+                        crossAxisSpacing: getIssuesGridGutter(context),
+                        mainAxisSpacing: getIssuesGridGutter(context),
+                        childAspectRatio: (childWidth / childHeight),
+                        children: [
+                          for (File file in state.files)
+                            FileWidget(
+                              file: file,
+                              dragSubject: _dragSubject,
+                            ),
+                        ],
+                        scrollDirection: Axis.vertical,
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
           ),
         ),
-        floatingActionButton: Theme(
-          data: Theme.of(context).copyWith(canvasColor: Colors.transparent),
-          child: Builder(
-            builder: (context) => FloatingActionButton(
-              child: Icon(Icons.add),
-              tooltip: 'Add File',
-              onPressed: () => showModalBottomSheet(
-                context: context,
-                builder: (context) => AddFileBottomSheet(),
-                // shape: RoundedRectangleBorder(
-                //   borderRadius: BorderRadius.only(
-                //     topLeft: Radius.circular(10),
-                //     topRight: Radius.circular(10),
-                //   ),
-                // ),
-                // backgroundColor: Colors.transparent,
-                isScrollControlled: true,
-              ),
+      ),
+      floatingActionButton: Theme(
+        data: Theme.of(context).copyWith(canvasColor: Colors.transparent),
+        child: Builder(
+          builder: (context) => FloatingActionButton(
+            child: Icon(Icons.add),
+            tooltip: 'Add File',
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              builder: (context) => AddFileBottomSheet(),
+              // shape: RoundedRectangleBorder(
+              //   borderRadius: BorderRadius.only(
+              //     topLeft: Radius.circular(10),
+              //     topRight: Radius.circular(10),
+              //   ),
+              // ),
+              // backgroundColor: Colors.transparent,
+              isScrollControlled: true,
             ),
           ),
         ),
@@ -229,9 +225,12 @@ class AddFileBottomSheet extends StatelessWidget {
     final isMobile = width < 700;
     final isTablet = width >= 700 && width < 1400;
     double padding;
-    if (isMobile) padding = 0;
-    else if (isTablet) padding = 180;
-    else padding = 400;
+    if (isMobile)
+      padding = 0;
+    else if (isTablet)
+      padding = 180;
+    else
+      padding = 400;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: padding),
       child: Container(
@@ -411,15 +410,24 @@ class FileWidget extends StatelessWidget {
       },
       child: DragTarget<File>(
         onWillAccept: (file) {
-          dragSubject.add(this.file);
           print('${this.file.name} is under ${file.name}');
-          return this.file.isDirectory;
+          final willAccept = this.file.isDirectory && this.file != file;
+          if (willAccept) {
+            dragSubject.add(this.file);
+          }
+          return willAccept;
         }, // files can only be placed in directories
         onLeave: (file) {
           dragSubject.add(null);
         },
         onAccept: (file) {
           dragSubject.add(null);
+          BlocProvider.of<FilesBloc>(context).add(
+            MoveFileEvent(
+              fileName: file.name,
+              fileToMoveTo: this.file.name,
+            ),
+          );
           print('moved file');
           print('accepting ${file.name}');
         }, // TODO Bloc.movefile,

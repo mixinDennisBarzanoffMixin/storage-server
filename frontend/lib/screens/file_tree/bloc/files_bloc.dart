@@ -95,6 +95,15 @@ class FilesBloc extends Bloc<FilesEvent, FilesState> {
             files: currentFileList,
             directory: currentState.currentDirectory,
           );
+        } else if (event is MoveFileEvent) {
+          final fileName = '$currentDirectory${event.fileName}';
+          final directoryToMoveTo = '$currentDirectory${event.fileToMoveTo}/${event.fileName}';
+          await _fileService.moveFile(fileName, directoryToMoveTo);
+          currentFileList.removeWhere((file) => file.name == event.fileName);
+          yield FilesAtDirectory(
+            files: currentFileList,
+            directory: currentState.currentDirectory,
+          );
         }
       } else if (event is GoBackEvent) {
         if (currentDirectory == '/') {

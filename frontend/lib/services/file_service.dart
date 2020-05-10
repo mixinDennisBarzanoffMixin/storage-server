@@ -89,4 +89,19 @@ class FileService {
         throw Exception('Error while deleting file: ${response.statusCode}');
     }
   }
+
+  Future<void> moveFile(String fileName, String pathToMoveTo) async {
+    final response = await _client.post(
+      'http://100.115.92.198:8080/files/move?filePath=$fileName&filePathToMoveTo=$pathToMoveTo',
+      headers: {
+        HttpHeaders.authorizationHeader: await _getToken(),
+      },
+    );
+    switch (response.statusCode) {
+      case 200:
+        return;
+      default:
+        throw Exception('Error while moving file: ${response.statusCode}');
+    }
+  }
 }
