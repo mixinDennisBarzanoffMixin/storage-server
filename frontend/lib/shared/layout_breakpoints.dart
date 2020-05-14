@@ -4,7 +4,7 @@ enum ScreenSize { small, medium, large }
 
 ScreenSize getScreenSizeFrom(BuildContext context) {
   // one issue is four columns
-  final height = MediaQuery.of(context).size.height;
+  // final height = MediaQuery.of(context).size.height;
   final width = MediaQuery.of(context).size.width;
   if (width < 600) {
     return ScreenSize.small;

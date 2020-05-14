@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:bloc/bloc.dart';
+import 'package:file_server_flutter/conf.dart';
 import 'package:file_server_flutter/services/file_service.dart';
 import 'package:file_server_flutter/shared/file.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:meta/meta.dart';
 
 part 'files_event.dart';
@@ -42,7 +46,6 @@ class FilesBloc extends Bloc<FilesEvent, FilesState> {
             fileName,
             event.whatToRenameTo,
           );
-          // if (currentState is FilesAtDirectory) {
           List<File> updatedFiles = currentFileList.map((file) {
             if (file.name == event.fileName) {
               return File(
@@ -56,7 +59,9 @@ class FilesBloc extends Bloc<FilesEvent, FilesState> {
 
           currentFileList = updatedFiles;
           yield FilesAtDirectory(
-              files: updatedFiles, directory: currentState.currentDirectory);
+            files: updatedFiles,
+            directory: currentState.currentDirectory,
+          );
         } else if (event is CreateFileEvent) {
           await _fileService.createFile(
             fileName,
@@ -97,13 +102,24 @@ class FilesBloc extends Bloc<FilesEvent, FilesState> {
           );
         } else if (event is MoveFileEvent) {
           final fileName = '$currentDirectory${event.fileName}';
-          final directoryToMoveTo = '$currentDirectory${event.fileToMoveTo}/${event.fileName}';
+          final directoryToMoveTo =
+              '$currentDirectory${event.fileToMoveTo}/${event.fileName}';
           await _fileService.moveFile(fileName, directoryToMoveTo);
           currentFileList.removeWhere((file) => file.name == event.fileName);
           yield FilesAtDirectory(
             files: currentFileList,
             directory: currentState.currentDirectory,
           );
+        } else if (event is ShareFileEvent) {
+          final fileName = '$currentDirectory${event.fileName}';
+          final token = await _fileService.shareFile(fileName);
+          final url =
+              'http://${config.address}:${config.port}/#/shared?token=$token';
+          print('token : $url');
+          yield LinkFileState(currentDirectory: currentDirectory, url: url);
+
+          yield FilesAtDirectory(
+              files: currentFileList, directory: currentDirectory);
         }
       } else if (event is GoBackEvent) {
         if (currentDirectory == '/') {
@@ -124,6 +140,32 @@ class FilesBloc extends Bloc<FilesEvent, FilesState> {
           directory: currentDirectory, // TODO fix
         );
         currentFileList = files;
+      } else if (event is UploadMultipartFileEvent) {
+        await _fileService.uploadMultipartFile(event.file, currentDirectory);
+        yield FilesAtDirectory(
+          directory: currentDirectory,
+          files: currentFileList
+            ..add(
+              File(
+                event.file.filename,
+                isDirectory: false,
+                lastModified: DateTime.now(),
+              ),
+            ),
+        );
+      } else if (event is UploadFileEvent) {
+        await _fileService.uploadFile(event.fileName, event.bytes, currentDirectory);
+        yield FilesAtDirectory(
+          directory: currentDirectory,
+          files: currentFileList
+            ..add(
+              File(
+                event.fileName,
+                isDirectory: false,
+                lastModified: DateTime.now(),
+              ),
+            ),
+        );
       }
     } on Exception catch (e) {
       yield FilesError(e.toString());

@@ -8,6 +8,8 @@ import 'package:jwt_decode/jwt_decode.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../conf.dart';
+
 class UserAlreadyExistsException {
   UserAlreadyExistsException();
 }
@@ -68,7 +70,7 @@ class AuthService {
     @required String name,
   }) async {
     final response = await _client.post(
-      'http://localhost:8080/signup',
+      'http://${config.address}:${config.port}/signup',
       body: jsonEncode({
         'email': email,
         'password': password,
@@ -93,29 +95,29 @@ class AuthService {
   }) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-final response = await _client.post(
-  'http://100.115.92.198:8080/login',
-  body: jsonEncode({
-    'email': email,
-    'password': password,
-  }),
-  headers: {HttpHeaders.contentTypeHeader: 'application/json'},
-);
-print('Auth response:');
-print(response);
+    final response = await _client.post(
+      'http://${config.address}:${config.port}/login',
+      body: jsonEncode({
+        'email': email,
+        'password': password,
+      }),
+      headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+    );
+    print('Auth response:');
+    print(response);
 
-switch (response.statusCode) {
-  case 200:
-    print('success');
-    final authToken = response.headers['authorization'];
-    print(response.headers);
-    print(authToken);
-    prefs.setString('authToken', authToken);
-    userSubject.add(authToken.toUser());
-    return;
-  default:
-    throw Exception('Unknown error');
-}
+    switch (response.statusCode) {
+      case 200:
+        print('success');
+        final authToken = response.headers['authorization'];
+        print(response.headers);
+        print(authToken);
+        prefs.setString('authToken', authToken);
+        userSubject.add(authToken.toUser());
+        return;
+      default:
+        throw Exception('Unknown error');
+    }
   }
 
   Future<void> signout() async {

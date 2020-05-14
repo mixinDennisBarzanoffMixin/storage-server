@@ -1,14 +1,17 @@
+import 'package:file_picker_cross/file_picker_cross.dart';
 import 'package:file_server_flutter/services/auth_service.dart';
 import 'package:file_server_flutter/shared/file.dart';
 import 'package:file_server_flutter/shared/layout_breakpoints.dart';
 import 'package:file_server_flutter/shared/user.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_scaffold/responsive_scaffold.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../shared.dart';
 import 'bloc/files_bloc.dart';
 import 'create_file.dart';
 
@@ -63,6 +66,24 @@ class _FileTreeState extends State<FileTree> {
                   ListTile(
                     leading: Icon(Icons.people),
                     title: Text('Shared with me'),
+                    onTap: () async {
+                      String token = await showDialog<String>(
+                        context: context,
+                        builder: (context) => InputNameDialog(
+                          title: Text('Enter new token'),
+                        ),
+                      );
+                      Navigator.pop(context);
+                      if (token != null) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => SharedFiles(
+                              token: token,
+                            ),
+                          ),
+                        );
+                      }
+                    },
                   ),
                 ],
               ),
@@ -84,7 +105,7 @@ class _FileTreeState extends State<FileTree> {
               child: CircleAvatar(
                 backgroundColor: Colors.red,
                 radius: 20,
-                child: Text(getFirstLetterOfName(context)),
+                child: Text(getFirstLetterOfName(context).toUpperCase()),
               ),
             );
           } else
@@ -95,7 +116,9 @@ class _FileTreeState extends State<FileTree> {
         isLoading: _isLoading,
         child: Scrollbar(
           child: BlocConsumer<FilesBloc, FilesState>(
-            listener: (context, state) {
+            listener: (context, state) async {
+              print(state);
+              print(state.runtimeType);
               if (state is FilesLoading) {
                 setState(() {
                   _isLoading = true;
@@ -107,6 +130,15 @@ class _FileTreeState extends State<FileTree> {
                     content: Text(state.message),
                   ),
                 );
+              } else if (state is LinkFileState) {
+                print('link file state in consumer');
+                print(state.url);
+                Clipboard.setData(ClipboardData(text: state.url));
+                // await ClipboardManager.copyToClipBoard(state.url);
+                final snackBar = SnackBar(
+                  content: Text('Link copied to clipboard'),
+                );
+                Scaffold.of(context).showSnackBar(snackBar);
               }
               setState(() {
                 _isLoading = false;
@@ -186,35 +218,35 @@ class _FileTreeState extends State<FileTree> {
     );
   }
 
-  int getIssueGridCount(BuildContext context) {
-    ScreenSize size = getScreenSizeFrom(context);
-    switch (size) {
-      case ScreenSize.small:
-        return 1;
-      case ScreenSize.medium:
-        return 2;
-      case ScreenSize.large:
-        return 3;
-    }
-  }
-
-  double getIssuesGridGutter(BuildContext context) {
-    ScreenSize size = getScreenSizeFrom(context);
-    switch (size) {
-      case ScreenSize.small:
-        return 16;
-      case ScreenSize.medium:
-      case ScreenSize.large:
-        return 24;
-    }
-  }
-
   String getFirstLetterOfName(BuildContext context) {
     final user = Provider.of<User>(context);
     if (user != null)
       return user.displayName.substring(0, 1);
     else
       return 'None';
+  }
+}
+
+int getIssueGridCount(BuildContext context) {
+  ScreenSize size = getScreenSizeFrom(context);
+  switch (size) {
+    case ScreenSize.small:
+      return 1;
+    case ScreenSize.medium:
+      return 2;
+    case ScreenSize.large:
+      return 3;
+  }
+}
+
+double getIssuesGridGutter(BuildContext context) {
+  ScreenSize size = getScreenSizeFrom(context);
+  switch (size) {
+    case ScreenSize.small:
+      return 16;
+    case ScreenSize.medium:
+    case ScreenSize.large:
+      return 24;
   }
 }
 
@@ -262,7 +294,25 @@ class AddFileBottomSheet extends StatelessWidget {
                   context: context,
                   icon: Icon(Icons.file_upload),
                   text: 'Upload file',
-                  callback: () => print('lel'),
+                  callback: () async {
+                    FilePickerCross filePicker = FilePickerCross();
+                    await filePicker.pick();
+
+                    String fileName = await showDialog<String>(
+                      context: context,
+                      builder: (context) => InputNameDialog(
+                        title: Text('Enter new name'),
+                      ),
+                    );
+                    if (fileName != null) {
+                      var file = filePicker.toMultipartFile(filename: fileName);
+                      BlocProvider.of<FilesBloc>(context).add(
+                        UploadMultipartFileEvent(file: file),
+                      );
+                      Navigator.pop(context);
+                    }
+                    // Navigator.pop(context);
+                  },
                 ),
                 _gridTile(
                   context: context,
@@ -340,7 +390,7 @@ class FileWidget extends StatelessWidget {
   const FileWidget({
     Key key,
     @required this.file,
-    @required this.dragSubject,
+    this.dragSubject,
   }) : super(key: key);
   @override
   Widget build(BuildContext context) {
@@ -467,6 +517,16 @@ class OptionsBottomSheet extends StatelessWidget {
                 ),
               );
             }
+            Navigator.pop(context);
+          },
+        ),
+        ListTile(
+          leading: Icon(Icons.link),
+          title: Text("Share file"),
+          onTap: () async {
+            BlocProvider.of<FilesBloc>(context).add(
+              ShareFileEvent(fileName: file.name),
+            );
             Navigator.pop(context);
           },
         ),

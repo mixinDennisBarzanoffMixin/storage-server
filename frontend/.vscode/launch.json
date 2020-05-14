@@ -24,5 +24,6 @@
 			"name": "All Devices",
 			"configurations": ["Android", "Web"],
 		}
-	]
+	],
+	"justMyCode": true
 }

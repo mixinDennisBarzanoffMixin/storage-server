@@ -49,3 +49,22 @@ class MoveFileEvent extends FileNameEvent {
     @required this.fileToMoveTo,
   }) : super(fileName);
 }
+
+class ShareFileEvent extends FileNameEvent {
+  ShareFileEvent({@required String fileName}) : super(fileName);
+}
+
+class UploadMultipartFileEvent extends FilesEvent {
+  final MultipartFile file;
+  UploadMultipartFileEvent({@required this.file});
+}
+
+class UploadFileEvent extends FilesEvent {
+  final String fileName;
+  final Uint8List bytes;
+
+  UploadFileEvent({
+    @required this.fileName,
+    @required this.bytes,
+  });
+}

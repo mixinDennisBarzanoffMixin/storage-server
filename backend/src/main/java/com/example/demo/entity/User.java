@@ -1,6 +1,8 @@
 package com.example.demo.entity;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class User {
@@ -75,4 +77,8 @@ public class User {
 
     @OneToOne(targetEntity = ConfirmationToken.class)
     private ConfirmationToken token;
+
+    @OneToMany(targetEntity = SharedFile.class)
+    @JoinColumn(name = "user_id")
+    private List<SharedFile> sharedFileList = new ArrayList<>();
 }

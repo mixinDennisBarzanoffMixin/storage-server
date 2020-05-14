@@ -55,11 +55,11 @@ public class UserAccountController {
             mailMessage.setSubject("Complete Registration!");
             mailMessage.setFrom("denis.r.barzanov.2015@elsys-bg.org");
             mailMessage.setText("To confirm your account, please click here : "
-                    + "http://penguin.linux.test:8000/confirm-account?token=" + confirmationToken.getConfirmationToken());
+                    + "http://localhost:8080/confirm-account?token=" + confirmationToken.getConfirmationToken());
 
             emailSenderService.sendEmail(mailMessage);
 
-            return ResponseEntity.created(URI.create("penguin.linux.test:8000/users/" + user.getUserId())).build();
+            return ResponseEntity.created(URI.create("localhost:8080/users/" + user.getUserId())).build();
         }
     }
 
@@ -73,7 +73,7 @@ public class UserAccountController {
             user.setEnabled(true);
             userRepository.save(user);
             return ResponseEntity.status(301)
-                    .header(HttpHeaders.LOCATION, "http://localhost:4200/#/signin")
+                    .header(HttpHeaders.LOCATION, "https://localhost:8080/#/signin")
                     .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Location")
                     .body("Account Confirmed");
         } else {

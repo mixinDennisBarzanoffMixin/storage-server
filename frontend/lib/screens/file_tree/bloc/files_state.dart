@@ -28,3 +28,10 @@ class FilesAtDirectory extends FilesState {
   }) : super(directory);
 }
 
+class LinkFileState extends FilesState {
+  final String url;
+  LinkFileState({
+    @required String currentDirectory,
+    @required this.url,
+  }) : super(currentDirectory);
+}

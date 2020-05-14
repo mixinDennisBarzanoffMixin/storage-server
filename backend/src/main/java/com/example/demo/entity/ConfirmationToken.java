@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.util.Date;
 import java.util.UUID;
 
-@Entity
+@Entity(name = "confirmation_token")
 public class ConfirmationToken {
 
     @Id

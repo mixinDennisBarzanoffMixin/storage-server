@@ -1,4 +1,5 @@
 import 'package:file_server_flutter/screens/file_tree/bloc/files_bloc.dart';
+import 'package:file_server_flutter/screens/shared.dart';
 import 'package:file_server_flutter/services/auth_service.dart';
 import 'package:file_server_flutter/shared/user.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
         theme: ThemeData(
           primarySwatch: Colors.blue,
@@ -34,9 +36,24 @@ class MyApp extends StatelessWidget {
         routes: {
           '/signup': (context) => SignUpScreen(),
           '/signin': (context) => SignInScreen(),
-          '/files': (context) => FileTree(),
+          '/': (context) => FileTree(),
         },
-        initialRoute: '/files',
+        initialRoute: '/',
+        onGenerateRoute: (settings) {
+          print('lol');
+          print(settings.name);
+          final split = settings.name.split('?');
+          final withoutArgs = split[0];
+          if (withoutArgs == '/shared') {
+            print('initializing shared route');
+            final token = split[1].split('=')[1];
+            // print('args');
+//0cbe4077-9e57-413b-b2d3-2a7c54c50101
+            print(token);
+            return MaterialPageRoute(
+                builder: (context) => SharedFiles(token: token));
+          }
+        },
       ),
     );
   }
