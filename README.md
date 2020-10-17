@@ -1,5 +1,7 @@
 # Storage Server
 
+A server that is used for file sharing and hosting of files.
+
 Spring Boot Rest (Kotlin) + Flutter
 
 Supported platforms: Android, iOS, Web
